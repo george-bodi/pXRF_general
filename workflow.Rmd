@@ -1,0 +1,67 @@
+---
+title: "workflow"
+output: word_document
+date: "2024-12-19"
+---
+
+```{r}
+library(readxl)
+library(tidyverse)
+
+Results_final_toate_cu_erori <- read_excel("Results_final_toate_cu_erori.xlsx", 
+    sheet = "RSD<10%")
+df <- as_tibble(Results_final_toate_cu_erori) |> 
+  mutate_if(is.character, as.factor)
+
+library(factoextra)
+library(FactoMineR)
+
+pca_df <- PCA(df[,3:13], graph = FALSE, scale.unit = TRUE)
+
+fviz_pca_biplot(pca_df, geom = "point", 
+                ol.var = "black", 
+    col.ind = df$SITE, 
+    shape.ind = df$SITE, 
+    pointsize = 1.5,
+    legend.title = "Groups", 
+    addEllipses = F, 
+    ellipse.level = 0.95, 
+    label = "var", 
+    habillage = df$SITE, 
+    ggtheme = theme_minimal(), 
+    title = "PCA", repel = TRUE)
+
+df2 <- df |> 
+  filter(!SITE == "HOIS argile")
+
+pca_df2 <- PCA(df2[,3:13], graph = FALSE, scale.unit = TRUE)
+
+fviz_pca_biplot(pca_df2, geom = "point", 
+                col.var = "black", 
+                col.ind = df2$SITE, 
+                shape.ind = df2$SITE, 
+                pointsize = 1.5,
+                legend.title = "Groups", 
+                addEllipses = F, 
+                ellipse.level = 0.65, 
+                label = "var", 
+                habillage = df2$SITE, 
+                ggtheme = theme_minimal(),
+                title = "PCA", repel = TRUE)
+
+library(dbscan)
+lof_scores <- lof(df2[,3:13], minPts = 5)
+hist(lof_scores, breaks = 100, col = "skyblue", border = "white", 
+     xlab = "Local Outlier Factor (LOF)", 
+     main = "Histogram of LOF scores")
+df2$lof_scores <- lof_scores
+ggplot(df2, aes(x = 1:nrow(df2), y = lof_scores, fill = SITE, color = SITE)) +
+  geom_point() +
+  geom_text(aes(label = SITE), vjust = -0.5) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+threshold <- 2
+df2$outliers <- as.factor(ifelse(lof_scores > threshold, "Outlier", "Inlier"))
+
+```
