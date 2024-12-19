@@ -38,38 +38,38 @@ fviz_pca_biplot(pca_df, geom = "point",
     ggtheme = theme_minimal(), 
     title = "PCA", repel = TRUE)
 
-df <- df |> 
+df2 <- df |> 
   filter(!SITE == "HOIS argile")
 
-pca_df <- PCA(df2[,3:13], graph = FALSE, scale.unit = TRUE)
+pca_df2 <- PCA(df2[,3:13], graph = FALSE, scale.unit = TRUE)
 
-fviz_pca_biplot(pca_df, geom = "point", 
+fviz_pca_biplot(pca_df2, geom = "point", 
                 col.var = "black", 
-                col.ind = df$SITE, 
-                shape.ind = df$SITE, 
+                col.ind = df2$SITE, 
+                shape.ind = df2$SITE, 
                 pointsize = 1.5,
                 legend.title = "Groups", 
                 addEllipses = F, 
                 ellipse.level = 0.65, 
                 label = "var", 
-                habillage = df$Tip, 
+                habillage = df2$SITE, 
                 ggtheme = theme_minimal(),
                 title = "PCA", repel = TRUE)
 
 library(dbscan)
-lof_scores <- lof(df[,3:13], minPts = 5)
+lof_scores <- lof(df2[,3:13], minPts = 5)
 hist(lof_scores, breaks = 100, col = "skyblue", border = "white", 
      xlab = "Local Outlier Factor (LOF)", 
      main = "Histogram of LOF scores")
-df$lof_scores <- lof_scores
-ggplot(df, aes(x = 1:nrow(df), y = lof_scores, fill = SITE, color = SITE)) +
+df2$lof_scores <- lof_scores
+ggplot(df2, aes(x = 1:nrow(df2), y = lof_scores, fill = SITE, color = SITE)) +
   geom_point() +
   geom_text(aes(label = SITE), vjust = -0.5) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 threshold <- 2
-df$outliers <- as.factor(ifelse(lof_scores > threshold, "Outlier", "Inlier"))
+df2$outliers <- as.factor(ifelse(lof_scores > threshold, "Outlier", "Inlier"))
 
 
 ```
